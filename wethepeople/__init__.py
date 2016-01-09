@@ -1,52 +1,69 @@
-from core import RequestObject
-
 try:
-    import objects, url
-except ImportError:
-    from . import objects, url
+    from objects import (Petition, Metadata,
+                         ResponseInfo, RequestInfo,
+                         ResultSet, PetitionResponse)
 
+    import url
+    from core import RequestObject
+except ImportError:
+    from . import url
+    from .core import RequestObject
+    from .objects import (Petition, Metadata,
+                          ResponseInfo, RequestInfo,
+                          ResultSet, PetitionResponse)
 
 
 class Api(object):
 
-    def __init__(self, apikey=None):
+    def __init__(self, apikey=None, apiversion="1"):
         """Creates Api Instance"""
 
-        self.r = core.RequestObject
+        self.r = RequestObject()
+        self.version = apiversion
         self.apikey = apikey
 
+    @property
+    def apiendpoint(self):
+        return url.Url(
+            "https://api.whitehouse.gov/v{v}".format(v=self.version)
+        )
 
-    def request(self, api, value=None, shard=None,
-                user_agent=None, auto_load=True,
-                version=__apiversion__):
+    def populate(self, object, response):
+        return
 
+    def get(self, pages=None, query=None):
+        pages = pages if pages else list()
+        query = query if query else dict()
 
-        useragent = self.user_agent if not user_agent else user_agent
-        req = copy.copy(
-            self._call(api, value, shard, useragent, auto_load, version))
-        req.api_instance.session = self.nsobj.api_instance.session
-        return req
+        url = self.apiendpoint.page(*pages).query(**query)
+        return self.r.get(str(url))
 
-    def req_auth(self, value=None, checksum=None, shard=None,
-                 user_agent=None, auto_load=True,
-                 version=__apiversion__, token=None):
+    def petitions(self, response):
         """
-        Auth Requests
-        :param api: The api being requested
-        :param value: The value of the api
-        :param shard: Shards to be requested
-        :param user_agent: user_agent to be used for this request
-        :param auto_load: If true the Nationstates instance will request the api on creation
-        :param version: version to use.
-        :param checksum: The Checksum for auth
-        :param token: Token for auth
+        Takes Petitions responses and creates the
+        Petition Object
         """
-        if not isinstance(checksum, str):
-            raise exceptions.NSError("checksum must be type(str)")
-        if not isinstance(token, str) != (token is None):
-            raise exceptions.NSError("token must be type(str) or type(None)")
-        useragent = self.user_agent if not user_agent else user_agent
-        req = copy.copy(
-            AuthNationstates("nation", value, shard, useragent, auto_load, version, checksum, token))
-        req.api_instance.session = self.nsobj.api_instance.session
-        return req
+        rjson = response.json()
+        metadata = Metadata(
+            ResponseInfo()._populate(**
+                                    rjson["metadata"]
+                                    .get("responseInfo", dict())),
+            RequestInfo()._populate(**
+                                   rjson["metadata"]
+                                   .get("requestInfo", dict())),
+            ResultSet()._populate(**
+                                 rjson["metadata"]
+                                 .get("resultset", dict())),
+        )
+        generatedlist = list()
+        for petition in rjson["results"]:
+            generatedlist.append(Petition()._populate(**petition))
+        return PetitionResponse(metadata, generatedlist)
+
+    def get_petitions(self, **kwargs):
+        response=self.get(pages=["petitions.json"], query=kwargs)
+        return self.petitions(response)
+
+    def get_petition(self, id):
+        response=self.get(pages=["petitions", str(id)+".json"], query=dict())
+        return self.petitions(response)

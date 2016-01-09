@@ -7,12 +7,11 @@ class SessionWrapper(object):
     This Class Wraps around Request.Session
     """
 
-    def __init__(self, apikey):
-        self.session = requests.Session()
-        self.apikey = apikey
+    def __init__(self):
+        self.session = Session()
 
     def get(self, url):
-        return session.get(url)
+        return self.session.get(url, verify=True)
 
     def post(self):
         raise NotImplementedError
@@ -22,8 +21,8 @@ class RequestObject(object):
     This class wraps around SessionWrapper
     """
 
-    def __init__(self, apikey):
-        self.session = SessionWrapper(apikey=apikey)
+    def __init__(self):
+        self.session = SessionWrapper()
 
     def get(self, url):
         return self.session.get(url)

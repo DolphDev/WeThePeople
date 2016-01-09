@@ -34,7 +34,6 @@ class Url(object):
                     name= list(x.keys())[0],
                     val= x[list(x.keys())[0]]
                     )
-                print(track)
         return track
 
     def page(self, *args):
@@ -48,7 +47,6 @@ class Url(object):
         return self
 
     def query(self, **kwargs):
-        print(kwargs)
         for arg in list(kwargs.keys()):
             self.querytrack.append({arg:kwargs.get(arg)})
         return self

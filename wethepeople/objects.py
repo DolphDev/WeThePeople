@@ -1,36 +1,61 @@
+class WTPBaseObject(object):
+    pass
 
-class WTPBaseClass(object):
+class WTPResultObject(WTPBaseObject):
 
-    def __init__(self, response, **kwargs):
-        self.objectargs = kwargs
-        return _populate
+    def _populate(self, **kwargs):
 
-    def POST(self, *args, **kwargs):
-        pass
-
-    def GET(self, *args, **kwargs):
-        pass
-
-    def _populate(self):
         for args in kwargs.items():
             setattr(self, args[0], args[1])
         return self
 
 
-"""
+class APIResponse(WTPBaseObject):
+    """
+    This the response object()
+    """
 
-MetaData Classes
+    def __init__(self, metadata, results):
+        self._metadata = metadata
+        self._results = results
 
-"""
+    @property
+    def metadata(self):
+        return self._metadata
+
+    @property
+    def results(self):
+        return self._results
+
+class PetitionResponse(APIResponse):
+
+    def ids(self):
+        """
+        Get the list of Petition ids
+        """
+        raise NotImplementedError
 
 
-class ResponseInfo(WTPBaseClass):
+class Metadata(WTPResultObject):
+
+    def __init__(self, responseinfo, requestinfo, resultset):
+        self.responseinfo = responseinfo
+        self.requestinfo = requestinfo
+        self.resultset = resultset
+
+
+class ResponseInfo(WTPResultObject):
     pass
 
 
-class RequestInfo(WTPBaseClass):
+class RequestInfo(WTPResultObject):
     pass
 
 
-class Petition(WTPBaseClass):
+class ResultSet(WTPResultObject):
     pass
+
+
+class Petition(WTPResultObject):
+    pass
+
