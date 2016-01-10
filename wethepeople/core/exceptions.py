@@ -1,5 +1,3 @@
-
-
 class WTPBaseException(Exception):
     pass
 

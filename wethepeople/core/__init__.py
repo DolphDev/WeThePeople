@@ -3,10 +3,13 @@ from . import exceptions
 
 
 def ErrorProbe(response):
+    """
+    Probes the Response for errors
+    """
     responsejson = response.json()["metadata"]["responseInfo"]
     if responsejson.get("status") is 400 or responsejson.get("status") is 404:
         # Yes, 400 is 404 for some reason
-        # 404 In case they break it
+        # 404 In case they fix it
         raise exceptions.PetitionNotFound(
             "Error {errorCode}\nMessage: {message}".format(
                 errorCode=responsejson.get("errorCode"),
