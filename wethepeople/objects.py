@@ -85,7 +85,19 @@ class Petition(WTPResultObject):
     def __repr__(self):
         return "<petition:{id}>".format(id=self.id)
 
+    def search_signatures(self, **kwargs):
+        return self.api_instance.get_signatures(self.id, **kwargs)
+
+    @property
+    def signatures(self):
+        return self.search_signatures().results
+
+
 class Signature(WTPResultObject):
 
     def __repr__(self):
-        return "<signature:{id}>".format(id=self.id)
+        return "<signatureFor:petition:{id}>".format(id=self.petitionId)
+
+    @property
+    def petition(self):
+        return self.api_instance.get_petition(self.petitionId)

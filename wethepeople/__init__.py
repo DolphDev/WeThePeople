@@ -1,7 +1,8 @@
 try:
     from objects import (Petition, Metadata,
                          ResponseInfo, RequestInfo,
-                         ResultSet, PetitionResponse)
+                         ResultSet, PetitionResponse,
+                         Signature, SignatureResponse)
     import url
     from core import RequestObject
 except ImportError:
@@ -9,7 +10,8 @@ except ImportError:
     from .core import RequestObject
     from .objects import (Petition, Metadata,
                           ResponseInfo, RequestInfo,
-                          ResultSet, PetitionResponse)
+                          ResultSet, PetitionResponse,
+                          Signature, SignatureResponse)
 
 
 class Api(object):
@@ -30,14 +32,14 @@ class Api(object):
     def _gen_metadata(self, rjson):
         metadata = Metadata(
             ResponseInfo()._populate(self, **
-                                    rjson["metadata"]
-                                    .get("responseInfo", dict())),
+                                     rjson["metadata"]
+                                     .get("responseInfo", dict())),
             RequestInfo()._populate(self, **
-                                   rjson["metadata"]
-                                   .get("requestInfo", dict())),
+                                    rjson["metadata"]
+                                    .get("requestInfo", dict())),
             ResultSet()._populate(self, **
-                                 rjson["metadata"]
-                                 .get("resultset", dict())),
+                                  rjson["metadata"]
+                                  .get("resultset", dict())),
         )
         return metadata
 
@@ -54,12 +56,11 @@ class Api(object):
         Petition Object
         """
         rjson = response.json()
-
+        metadata = self._gen_metadata(rjson)
         generatedlist = list()
         for petition in rjson["results"]:
-            generatedlist.append(Petition()._populate(self, **petition))
-        return PetitionResponse(metadata, generatedlist, self)
-
+            generatedlist.append(Signature()._populate(self, **petition))
+        return SignatureResponse(metadata, generatedlist, self)
 
     def petition_handler(self, response):
         """
@@ -74,10 +75,15 @@ class Api(object):
         return PetitionResponse(metadata, generatedlist, self)
 
     def get_petitions(self, **kwargs):
-        response=self.get(pages=["petitions.json"], query=kwargs)
+        response = self.get(pages=["petitions.json"], query=kwargs)
         return self.petition_handler(response)
 
     def get_petition(self, id):
-        response=self.get(pages=["petitions", str(id)+".json"], query=dict())
+        response = self.get(
+            pages=["petitions", str(id)+".json"], query=dict())
         return self.petition_handle(response)
 
+    def get_signatures(self, petition_id, **kwargs):
+        response = self.get(
+            pages=["petitions", str(petition_id), "signatures.json"], query=kwargs)
+        return self.signature_handler(response)
