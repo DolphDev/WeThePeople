@@ -1,9 +1,11 @@
 class WTPBaseObject(object):
     pass
 
+
 class WTPResultObject(WTPBaseObject):
 
-    def _populate(self, **kwargs):
+    def _populate(self, instance, **kwargs):
+        self.api_instance = instance
 
         for args in kwargs.items():
             setattr(self, args[0], args[1])
@@ -11,13 +13,15 @@ class WTPResultObject(WTPBaseObject):
 
 
 class APIResponse(WTPBaseObject):
+
     """
     This the response object()
     """
 
-    def __init__(self, metadata, results):
+    def __init__(self, metadata, results, apiinstance):
         self._metadata = metadata
         self._results = results
+        self.instance = apiinstance
 
     @property
     def metadata(self):
@@ -27,13 +31,33 @@ class APIResponse(WTPBaseObject):
     def results(self):
         return self._results
 
+
+class SignatureResponse(APIResponse):
+
+    def _id_generator(self):
+        for signature in self.results:
+            yield signature.id
+
+    @property
+    def ids(self):
+        """
+        Get the list of signature ids
+        """
+        return list(self._id_generator())
+
+
 class PetitionResponse(APIResponse):
 
+    def _id_generator(self):
+        for petition in self.results:
+            yield petition.id
+
+    @property
     def ids(self):
         """
         Get the list of Petition ids
         """
-        raise NotImplementedError
+        return list(self._id_generator())
 
 
 class Metadata(WTPResultObject):
@@ -57,5 +81,11 @@ class ResultSet(WTPResultObject):
 
 
 class Petition(WTPResultObject):
-    pass
 
+    def __repr__(self):
+        return "<petition:{id}>".format(id=self.id)
+
+class Signature(WTPResultObject):
+
+    def __repr__(self):
+        return "<signature:{id}>".format(id=self.id)

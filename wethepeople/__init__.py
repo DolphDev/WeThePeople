@@ -2,7 +2,6 @@ try:
     from objects import (Petition, Metadata,
                          ResponseInfo, RequestInfo,
                          ResultSet, PetitionResponse)
-
     import url
     from core import RequestObject
 except ImportError:
@@ -28,8 +27,19 @@ class Api(object):
             "https://api.whitehouse.gov/v{v}".format(v=self.version)
         )
 
-    def populate(self, object, response):
-        return
+    def _gen_metadata(self, rjson):
+        metadata = Metadata(
+            ResponseInfo()._populate(self, **
+                                    rjson["metadata"]
+                                    .get("responseInfo", dict())),
+            RequestInfo()._populate(self, **
+                                   rjson["metadata"]
+                                   .get("requestInfo", dict())),
+            ResultSet()._populate(self, **
+                                 rjson["metadata"]
+                                 .get("resultset", dict())),
+        )
+        return metadata
 
     def get(self, pages=None, query=None):
         pages = pages if pages else list()
@@ -38,32 +48,36 @@ class Api(object):
         url = self.apiendpoint.page(*pages).query(**query)
         return self.r.get(str(url))
 
-    def petitions(self, response):
+    def signature_handler(self, response):
         """
         Takes Petitions responses and creates the
         Petition Object
         """
         rjson = response.json()
-        metadata = Metadata(
-            ResponseInfo()._populate(**
-                                    rjson["metadata"]
-                                    .get("responseInfo", dict())),
-            RequestInfo()._populate(**
-                                   rjson["metadata"]
-                                   .get("requestInfo", dict())),
-            ResultSet()._populate(**
-                                 rjson["metadata"]
-                                 .get("resultset", dict())),
-        )
+
         generatedlist = list()
         for petition in rjson["results"]:
-            generatedlist.append(Petition()._populate(**petition))
-        return PetitionResponse(metadata, generatedlist)
+            generatedlist.append(Petition()._populate(self, **petition))
+        return PetitionResponse(metadata, generatedlist, self)
+
+
+    def petition_handler(self, response):
+        """
+        Takes Petitions responses and creates the
+        Petition Object
+        """
+        rjson = response.json()
+        metadata = self._gen_metadata(rjson)
+        generatedlist = list()
+        for petition in rjson["results"]:
+            generatedlist.append(Petition()._populate(self, **petition))
+        return PetitionResponse(metadata, generatedlist, self)
 
     def get_petitions(self, **kwargs):
         response=self.get(pages=["petitions.json"], query=kwargs)
-        return self.petitions(response)
+        return self.petition_handler(response)
 
     def get_petition(self, id):
         response=self.get(pages=["petitions", str(id)+".json"], query=dict())
-        return self.petitions(response)
+        return self.petition_handle(response)
+

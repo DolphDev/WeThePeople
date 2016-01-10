@@ -1,2 +1,3 @@
 # WeThePeople
-Api Wrapper for we the People
+Api Wrapper for We the People
+
