@@ -25,14 +25,14 @@ class api_returns_petiton_object(unittest.TestCase):
 
 class api_returns_signature_object(unittest.TestCase):
 
-    def test_api_petitionResponse(self):
+    def test_api_SignatureResponse(self):
 
         api = wtp.Api()
-        o = api.get_petitions(mock=1).search_signatures(limit=1)
+        o = api.get_petitions(mock=1).results[0].search_signatures(limit=1)
         self.assertIsInstance(o, SignatureResponse)
 
     def test_api_petition(self):
         api = wtp.Api()
-        o = api.get_petitions(mock=1).search_signatures(limit=1)
-        self.assertIsInstance(o, SignatureResponse)
+        o = api.get_petitions(mock=1).results[0].search_signatures(limit=1).results[0]
+        self.assertIsInstance(o, Signature)
 
