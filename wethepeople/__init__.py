@@ -3,10 +3,10 @@ try:
                          ResponseInfo, RequestInfo,
                          ResultSet, PetitionResponse,
                          Signature, SignatureResponse)
-    import url
+    from ezurl import Url
     from core import RequestObject
 except ImportError:
-    from . import url
+    from ezurl import Url
     from .core import RequestObject
     from .objects import (Petition, Metadata,
                           ResponseInfo, RequestInfo,
@@ -25,9 +25,9 @@ class Api(object):
 
     @property
     def apiendpoint(self):
-        return url.Url(
-            "https://api.whitehouse.gov/v{v}".format(v=self.version)
-        )
+        return Url(
+            "api.whitehouse.gov/"
+        ).page("v{v}".format(v=self.version))
 
     def _gen_metadata(self, rjson):
         metadata = Metadata(

@@ -33,7 +33,7 @@ SOFTWARE.
 
 from setuptools import setup
 setup(name='wethepeople',
-      install_requires=["requests"],
+      install_requires=["requests", "ezurl"],
       version="0.0.0.1",
       description='We the People api wrapper for python',
       author='Joshua Walters',
