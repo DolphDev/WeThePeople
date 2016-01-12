@@ -1,5 +1,5 @@
 import unittest
-from wethepeople import url
+from wethepeople import Url
 
 
 
@@ -9,6 +9,6 @@ from wethepeople import url
 class url_test(unittest.TestCase):
 
     def test_url_is_string(self):
-        test_url = url.Url("http://myurl.com")
+        test_url = Url("http://myurl.com")
         self.assertIsInstance(str(test_url), str)
 
